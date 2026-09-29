@@ -1,0 +1,77 @@
+{{ define "main" }}
+{{ if eq .Params.ckan_type "resource" }}{{ partial "resource.html" . }}{{ else }}
+{{ $p := .Params.ckan }}
+{{ $src := site.Data.ckan.site.source_url }}
+<div class="breadcrumb">
+  <span><a href="{{ "/dataset/" | relURL }}">Datasets</a></span>
+  {{ with $p.organization }}<span><a href="{{ printf "/organization/%s/" .name | relURL }}">{{ .title }}</a></span>{{ end }}
+  <span>{{ .Title | truncate 60 }}</span>
+</div>
+<div class="layout">
+  <aside>
+    {{ with $p.organization }}
+    <div class="card">
+      {{ with partial "image.html" . }}<img src="{{ . }}" alt="" style="max-height:80px" loading="lazy">{{ end }}
+      <h3><a href="{{ printf "/organization/%s/" .name | relURL }}">{{ .title }}</a></h3>
+      {{ with .description }}<p class="small muted">{{ . | plainify | truncate 180 }}</p>{{ end }}
+    </div>
+    {{ end }}
+    {{ with $p.groups }}
+    <div class="card facet"><h4>Groups</h4><ul>
+      {{ range . }}<li><a href="{{ printf "/group/%s/" .name | relURL }}">{{ or .title .display_name .name }}</a></li>{{ end }}
+    </ul></div>
+    {{ end }}
+    <div class="card facet">
+      <h4>License</h4>
+      {{ if $p.license_url }}<a href="{{ $p.license_url }}">{{ $p.license_title }}</a>{{ else }}{{ $p.license_title | default "Not specified" }}{{ end }}
+      {{ if $p.isopen }}<p class="small muted">Open Data</p>{{ end }}
+    </div>
+    <div class="card facet">
+      <h4>Machine readable</h4>
+      <ul>
+        <li><a class="api-link" href="{{ with .OutputFormats.Get "ckanjson" }}{{ .RelPermalink }}{{ end }}">package_show JSON</a></li>
+        <li><a class="api-link" href="{{ $src }}/dataset/{{ $p.name }}">Original on source portal ↗</a></li>
+      </ul>
+    </div>
+  </aside>
+  <article>
+    <h1>{{ .Title }}</h1>
+    <div class="notes">{{ .Content }}</div>
+
+    <h2>Data and resources</h2>
+    <div class="card">
+      <ul class="resource-list">
+      {{ range $p.resources }}
+        <li>
+          <span class="fmt"><span class="badge" data-format="{{ upper .format }}">{{ upper .format | default "—" }}</span></span>
+          <div class="info">
+            <a href="{{ printf "/dataset/%s/resource/%s/" $p.name .id | relURL }}">{{ or .name .url }}</a>
+            {{ with .description }}<p>{{ . | plainify | truncate 140 }}</p>{{ end }}
+          </div>
+          <a class="btn ghost" href="{{ .url }}" rel="nofollow">Download</a>
+        </li>
+      {{ else }}<li class="muted">No resources.</li>{{ end }}
+      </ul>
+    </div>
+
+    {{ with .GetTerms "tags" }}
+    <h2>Tags</h2>
+    <div>{{ range . }}<a class="tag" href="{{ .RelPermalink }}">{{ .Title }}</a>{{ end }}</div>
+    {{ end }}
+
+    <h2>Additional info</h2>
+    <div class="card table-wrap"><table>
+      {{ with $p.url }}<tr><th>Source</th><td><a href="{{ . }}">{{ . }}</a></td></tr>{{ end }}
+      {{ with $p.author }}<tr><th>Author</th><td>{{ . }}{{ with $p.author_email }} &lt;{{ . }}&gt;{{ end }}</td></tr>{{ end }}
+      {{ with $p.maintainer }}<tr><th>Maintainer</th><td>{{ . }}{{ with $p.maintainer_email }} &lt;{{ . }}&gt;{{ end }}</td></tr>{{ end }}
+      {{ with $p.version }}<tr><th>Version</th><td>{{ . }}</td></tr>{{ end }}
+      <tr><th>Last updated</th><td>{{ .Lastmod.Format "2 January 2006" }}</td></tr>
+      <tr><th>Created</th><td>{{ .Date.Format "2 January 2006" }}</td></tr>
+      {{ range $p.extras }}{{ if .value }}<tr><th>{{ .key }}</th><td>{{ .value }}</td></tr>{{ end }}{{ end }}
+    </table></div>
+  </article>
+</div>
+{{ end }}
+{{ end }}
+
+{{ define "scripts" }}{{ if eq .Params.ckan_type "resource" }}{{ partial "preview-script.html" . }}{{ end }}{{ end }}

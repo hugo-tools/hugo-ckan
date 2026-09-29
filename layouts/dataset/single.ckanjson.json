@@ -1,0 +1,3 @@
+{{- /* package_show / resource_show, wrapped like the CKAN Action API. */ -}}
+{{- $action := cond (eq .Params.ckan_type "resource") "resource_show" "package_show" -}}
+{{- dict "help" (printf "%s/api/3/action/help_show?name=%s" site.Data.ckan.site.source_url $action) "success" true "result" .Params.ckan | jsonify -}}

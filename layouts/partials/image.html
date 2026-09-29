@@ -1,0 +1,5 @@
+{{- /* CKAN image_display_url, made absolute against the source portal. */ -}}
+{{- $u := "" -}}
+{{- with . }}{{ $u = .image_display_url | default "" }}{{ end -}}
+{{- if and $u (not (hasPrefix $u "http")) }}{{ $u = printf "%s/uploads/group/%s" site.Data.ckan.site.source_url $u }}{{ end -}}
+{{- return $u -}}

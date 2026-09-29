@@ -1,0 +1,48 @@
+{{ define "main" }}
+{{ $s := site.Data.ckan.site }}
+{{ $datasets := partialCached "datasets.html" . }}
+<section class="hero">
+  <h1>{{ $s.site_title | default site.Title }}</h1>
+  <p>{{ $s.site_description | default site.Params.description }}</p>
+  <form action="{{ "/dataset/" | relURL }}" role="search">
+    <input type="search" name="q" placeholder="Search {{ len $datasets | lang.FormatNumber 0 }} datasets…" aria-label="Search datasets" autofocus>
+    <button class="btn">Search</button>
+  </form>
+  <div class="stats">
+    <div><b>{{ len $datasets | lang.FormatNumber 0 }}</b><span>datasets</span></div>
+    <div><b>{{ len (where site.RegularPages "Params.ckan_type" "resource") | lang.FormatNumber 0 }}</b><span>resources</span></div>
+    <div><b>{{ len site.Taxonomies.organization }}</b><span>organizations</span></div>
+    <div><b>{{ len site.Taxonomies.group }}</b><span>groups</span></div>
+  </div>
+</section>
+
+{{ with site.Taxonomies.group }}
+<h2>Groups</h2>
+<div class="grid">
+  {{ range .Alphabetical }}
+  <a class="tile" href="{{ .Page.RelPermalink }}">
+    {{ with partial "image.html" .Page.Params.ckan }}<img src="{{ . }}" alt="" loading="lazy">{{ end }}
+    <h3>{{ .Page.Title }}</h3>
+    <span class="count">{{ .Count }} datasets</span>
+  </a>
+  {{ end }}
+</div>
+{{ end }}
+
+<div class="layout" style="margin-top:32px">
+  <aside>
+    <div class="card facet">
+      <h4>Popular tags</h4>
+      {{ range first 25 site.Taxonomies.tags.ByCount }}<a class="tag" href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>{{ end }}
+    </div>
+  </aside>
+  <div>
+    <h2 style="margin-top:0">Recently updated</h2>
+    <ul class="dataset-list">
+      {{ range first 8 $datasets.ByLastmod.Reverse }}{{ partial "dataset-item.html" . }}{{ end }}
+    </ul>
+    <a class="btn ghost" href="{{ "/dataset/" | relURL }}">All datasets →</a>
+  </div>
+</div>
+{{ partial "api-publish.html" . }}
+{{ end }}

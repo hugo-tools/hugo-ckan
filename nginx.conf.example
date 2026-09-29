@@ -1,0 +1,7 @@
+# Map CKAN's query-string API onto the static JSON files Hugo generates.
+# Static hosts ignore query strings, so these few actions need a rewrite.
+location = /api/3/action/package_show  { rewrite ^ /dataset/$arg_id/index.json last; }
+location = /api/3/action/resource_show { return 404; }  # needs package name; use the resource page's index.json
+location ~ ^/api/3/action/[a-z_]+$     { default_type application/json; add_header Access-Control-Allow-Origin *; }
+location ~ \.json(ld)?$                { add_header Access-Control-Allow-Origin *; }
+gzip_types application/json application/ld+json;

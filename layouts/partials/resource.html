@@ -1,0 +1,40 @@
+{{ $r := .Params.ckan }}
+{{ $ds := site.GetPage (printf "/dataset/%s" .Params.package_name) }}
+{{ $p := $ds.Params.ckan }}
+<div class="breadcrumb">
+  <span><a href="{{ "/dataset/" | relURL }}">Datasets</a></span>
+  {{ with $p.organization }}<span><a href="{{ printf "/organization/%s/" .name | relURL }}">{{ .title }}</a></span>{{ end }}
+  <span><a href="{{ $ds.RelPermalink }}">{{ $ds.Title | truncate 50 }}</a></span>
+  <span>{{ .Title | truncate 50 }}</span>
+</div>
+<div class="layout">
+  <aside>
+    <div class="card facet"><h4>Resources</h4><ul>
+      {{ range $p.resources }}
+      <li><a href="{{ printf "/dataset/%s/resource/%s/" $p.name .id | relURL }}"{{ if eq .id $r.id }} class="active"{{ end }}><span>{{ or .name .url | truncate 40 }}</span><span class="n">{{ upper .format }}</span></a></li>
+      {{ end }}
+    </ul></div>
+  </aside>
+  <article>
+    <h1>{{ .Title }}</h1>
+    <p><a class="btn" href="{{ $r.url }}" rel="nofollow">Download {{ upper $r.format }}</a>
+       <a class="btn ghost api-link" href="{{ with .OutputFormats.Get "ckanjson" }}{{ .RelPermalink }}{{ end }}">resource_show JSON</a></p>
+    <p class="small muted" style="overflow-wrap:anywhere">URL: <a href="{{ $r.url }}">{{ $r.url }}</a></p>
+    <div class="notes">{{ .Content }}</div>
+
+    <h2>Preview</h2>
+    <div class="card preview" id="preview"
+         data-url="{{ $r.url }}" data-format="{{ lower $r.format }}"
+         data-datastore="{{ if $r.datastore_active }}{{ site.Data.ckan.site.source_url }}/api/3/action/datastore_search?resource_id={{ $r.id }}&amp;limit=100{{ end }}">
+      <p class="muted">Loading preview…</p>
+      <noscript><p class="muted">Enable JavaScript to preview this resource.</p></noscript>
+    </div>
+
+    <h2>Additional info</h2>
+    <div class="card table-wrap"><table>
+      {{ range $k, $v := $r }}{{ if and $v (not (in (slice "description" "name" "id" "package_id" "position") $k)) (not (reflect.IsMap $v)) }}
+      <tr><th>{{ $k }}</th><td>{{ if eq $k "size" }}{{ lang.FormatNumber 0 $v }} bytes{{ else }}{{ $v }}{{ end }}</td></tr>
+      {{ end }}{{ end }}
+    </table></div>
+  </article>
+</div>

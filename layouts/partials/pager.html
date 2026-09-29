@@ -1,0 +1,12 @@
+{{ $pag := . }}
+{{ if gt $pag.TotalPages 1 }}
+<nav aria-label="Pagination"><ul class="pager">
+  {{ with $pag.Prev }}<li><a href="{{ .URL }}">‹ Prev</a></li>{{ end }}
+  {{ range $pag.Pagers }}
+    {{ if or (le .PageNumber 2) (ge .PageNumber (sub $pag.TotalPages 1)) (and (ge .PageNumber (sub $pag.PageNumber 2)) (le .PageNumber (add $pag.PageNumber 2))) }}
+      <li>{{ if eq . $pag }}<span class="current">{{ .PageNumber }}</span>{{ else }}<a href="{{ .URL }}">{{ .PageNumber }}</a>{{ end }}</li>
+    {{ else if or (eq .PageNumber 3) (eq .PageNumber (sub $pag.TotalPages 2)) }}<li><span>…</span></li>{{ end }}
+  {{ end }}
+  {{ with $pag.Next }}<li><a href="{{ .URL }}">Next ›</a></li>{{ end }}
+</ul></nav>
+{{ end }}

@@ -1,0 +1,36 @@
+{{ define "main" }}
+{{ $datasets := partialCached "datasets.html" . }}
+{{ $pag := .Paginate $datasets.ByTitle }}
+<div class="layout">
+  <aside id="facets">
+    {{/* No-JS fallback: facets link to pre-rendered taxonomy pages. JS replaces this. */}}
+    {{ range $f := slice (slice "organization" "Organizations") (slice "group" "Groups") (slice "tags" "Tags") (slice "formats" "Formats") (slice "licenses" "Licenses") }}
+      {{ with index site.Taxonomies (index . 0) }}
+      <div class="card facet"><h4>{{ index $f 1 }}</h4><ul>
+        {{ range first 10 .ByCount }}<li><a href="{{ .Page.RelPermalink }}"><span>{{ .Page.Title }}</span><span class="n">{{ .Count }}</span></a></li>{{ end }}
+      </ul></div>
+      {{ end }}
+    {{ end }}
+  </aside>
+  <div>
+    <form id="search-form" class="results-head" role="search">
+      <input type="search" name="q" id="q" placeholder="Search datasets…" aria-label="Search datasets" style="flex:1;min-width:200px">
+      <select name="sort" id="sort" aria-label="Sort">
+        <option value="score">Relevance</option>
+        <option value="name">Name A–Z</option>
+        <option value="metadata_modified desc">Last modified</option>
+      </select>
+    </form>
+    <div id="active-filters" class="active-filters"></div>
+    <p id="count" class="muted"><b>{{ len $datasets | lang.FormatNumber 0 }}</b> datasets found</p>
+    <ul class="dataset-list" id="results">
+      {{ range $pag.Pages }}{{ partial "dataset-item.html" . }}{{ end }}
+    </ul>
+    <div id="pager">{{ partial "pager.html" $pag }}</div>
+  </div>
+</div>
+{{ end }}
+{{ define "scripts" }}
+{{ $js := resources.Get "js/search.js" | js.Build (dict "minify" true "params" (dict "index" ("/index.json" | relURL) "base" ("/" | relURL))) | fingerprint }}
+<script src="{{ $js.RelPermalink }}" defer></script>
+{{ end }}

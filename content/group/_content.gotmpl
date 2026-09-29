@@ -1,0 +1,10 @@
+{{/* Same as organization/_content.gotmpl, for groups. */}}
+{{ $used := dict }}
+{{ range site.Data.ckan.packages }}{{ range .groups }}{{ $used = merge $used (dict .name true) }}{{ end }}{{ end }}
+{{ range site.Data.ckan.groups }}
+  {{ if index $used .name }}
+  {{ $.AddPage (dict "path" .name "kind" "term" "title" (or .title .display_name .name)
+      "content" (dict "mediaType" "text/markdown" "value" (or .description ""))
+      "params" (dict "ckan" .)) }}
+  {{ end }}
+{{ end }}

@@ -1,0 +1,14 @@
+{{/*
+  Organizations are a taxonomy; this adds CKAN metadata (title, description,
+  image) to each term page. Terms no dataset uses are skipped: Hugo can't
+  build a term page that has no datasets.
+*/}}
+{{ $used := dict }}
+{{ range site.Data.ckan.packages }}{{ with .organization }}{{ $used = merge $used (dict .name true) }}{{ end }}{{ end }}
+{{ range site.Data.ckan.organizations }}
+  {{ if index $used .name }}
+  {{ $.AddPage (dict "path" .name "kind" "term" "title" (or .title .display_name .name)
+      "content" (dict "mediaType" "text/markdown" "value" (or .description ""))
+      "params" (dict "ckan" .)) }}
+  {{ end }}
+{{ end }}

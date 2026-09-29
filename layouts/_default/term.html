@@ -1,0 +1,23 @@
+{{ define "main" }}
+{{ $c := .Params.ckan }}
+{{/* Link into the client-side search using CKAN's own query parameter names. */}}
+{{ $param := index (dict "organization" "organization" "group" "groups" "tags" "tags" "formats" "res_format" "licenses" "license_id") .Type }}
+{{ $value := .Title }}
+{{ with $c }}{{ $value = .name }}{{ end }}
+{{ if eq .Type "licenses" }}{{ with index .Pages 0 }}{{ $value = .Params.ckan.license_id }}{{ end }}{{ end }}
+<div class="breadcrumb"><span><a href="{{ .Parent.RelPermalink }}">{{ .Parent.Title }}</a></span><span>{{ .Title }}</span></div>
+<div class="org-head">
+  {{ with partial "image.html" $c }}<img src="{{ . }}" alt="">{{ end }}
+  <div>
+    <h1 style="margin:0">{{ .Title }}</h1>
+    {{ with .Content }}<div class="muted">{{ . }}</div>{{ end }}
+  </div>
+</div>
+{{ $pag := .Paginate .Pages.ByTitle }}
+<div class="results-head">
+  <p class="muted" style="margin:0"><b>{{ len .Pages | lang.FormatNumber 0 }}</b> datasets</p>
+  <a class="btn ghost" href="{{ "/dataset/" | relURL }}?{{ $param }}={{ $value | urlquery }}">Search &amp; filter within these →</a>
+</div>
+<ul class="dataset-list">{{ range $pag.Pages }}{{ partial "dataset-item.html" . }}{{ end }}</ul>
+{{ partial "pager.html" $pag }}
+{{ end }}

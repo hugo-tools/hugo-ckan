@@ -1,0 +1,52 @@
+{{/*
+  Publishes read-only CKAN Action API look-alikes and a DCAT catalogue as static files.
+  Query-string actions (package_show?id=) need a server rewrite; see README.
+*/}}
+{{ $s := site.Data.ckan.site }}
+{{ $datasets := partialCached "datasets.html" . }}
+{{ $wrap := dict "success" true }}
+{{ $names := slice }}{{ range $datasets }}{{ $names = $names | append .Params.ckan.name }}{{ end }}
+{{ $orgs := slice }}{{ range site.Data.ckan.organizations }}{{ $orgs = $orgs | append .name }}{{ end }}
+{{ $groups := slice }}{{ range site.Data.ckan.groups }}{{ $groups = $groups | append .name }}{{ end }}
+{{ $full := slice }}{{ range $datasets }}{{ $full = $full | append .Params.ckan }}{{ end }}
+{{ $tags := slice }}{{ range site.Taxonomies.tags }}{{ $tags = $tags | append .Page.Title }}{{ end }}
+{{ $endpoints := dict
+    "package_list" (sort $names)
+    "organization_list" (sort $orgs)
+    "group_list" (sort $groups)
+    "tag_list" (sort $tags)
+    "license_list" site.Data.ckan.licenses
+    "status_show" (dict "site_title" $s.site_title "site_description" $s.site_description "site_url" site.BaseURL
+                        "ckan_version" $s.ckan_version "extensions" (slice "hugo-static") "source_url" $s.source_url)
+    "current_package_list_with_resources" $full
+}}
+{{ range $action, $result := $endpoints }}
+  {{ $body := merge $wrap (dict "help" (printf "%s/api/3/action/help_show?name=%s" $s.source_url $action) "result" $result) | jsonify }}
+  {{ (resources.FromString (printf "api/3/action/%s" $action) $body).Publish }}
+  {{ (resources.FromString (printf "api/3/action/%s.json" $action) $body).Publish }}
+{{ end }}
+
+{{/* DCAT-AP catalogue (JSON-LD) so other portals can harvest this static site. */}}
+{{ $ds := slice }}
+{{ range $datasets }}
+  {{ $p := .Params.ckan }}
+  {{ $dist := slice }}
+  {{ range $p.resources }}
+    {{ $dist = $dist | append (dict "@type" "dcat:Distribution" "dct:title" (or .name "") "dcat:accessURL" .url "dcat:downloadURL" .url
+        "dct:format" (or .format "") "dcat:mediaType" (or .mimetype "") "dct:description" (or .description "")) }}
+  {{ end }}
+  {{ $kw := slice }}{{ range $p.tags }}{{ $kw = $kw | append .name }}{{ end }}
+  {{ $ds = $ds | append (dict
+      "@id" .Permalink "@type" "dcat:Dataset"
+      "dct:identifier" $p.id "dct:title" .Title "dct:description" ($p.notes | default "")
+      "dct:issued" (.Date.Format "2006-01-02T15:04:05") "dct:modified" (.Lastmod.Format "2006-01-02T15:04:05")
+      "dcat:keyword" $kw "dct:license" ($p.license_url | default $p.license_id | default "")
+      "dct:publisher" (dict "@type" "foaf:Organization" "foaf:name" (cond (isset $p "organization") (($p.organization | default dict).title | default "") ""))
+      "dcat:landingPage" .Permalink "dcat:distribution" $dist) }}
+{{ end }}
+{{ $catalog := dict
+    "@context" (dict "dcat" "http://www.w3.org/ns/dcat#" "dct" "http://purl.org/dc/terms/" "foaf" "http://xmlns.com/foaf/0.1/")
+    "@id" site.BaseURL "@type" "dcat:Catalog"
+    "dct:title" $s.site_title "dct:description" $s.site_description
+    "dcat:dataset" $ds }}
+{{ (resources.FromString "catalog.jsonld" (jsonify $catalog)).Publish }}

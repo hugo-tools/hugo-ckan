@@ -1,0 +1,22 @@
+{{- /* Client-side search index: compact records for every dataset. */ -}}
+{{- $orgs := dict -}}{{- range site.Data.ckan.organizations }}{{ $orgs = merge $orgs (dict .name (or .title .name)) }}{{ end -}}
+{{- $groups := dict -}}{{- range site.Data.ckan.groups }}{{ $groups = merge $groups (dict .name (or .title .display_name .name)) }}{{ end -}}
+{{- $licenses := dict -}}
+{{- $rows := slice -}}
+{{- range partialCached "datasets.html" . -}}
+  {{- $p := .Params.ckan -}}
+  {{- with $p.license_id }}{{ $licenses = merge $licenses (dict . ($p.license_title | default .)) }}{{ end -}}
+  {{- $rows = $rows | append (dict
+      "u" .RelPermalink
+      "t" .Title
+      "n" $p.name
+      "d" ($p.notes | default "" | plainify | htmlUnescape | truncate 300)
+      "o" (cond (isset $p "organization") (($p.organization | default dict).name | default "") "")
+      "g" (.Params.group | default slice)
+      "k" (.Params.tags | default slice)
+      "f" (.Params.formats | default slice)
+      "l" ($p.license_id | default "")
+      "m" (.Lastmod.Format "2006-01-02")
+  ) -}}
+{{- end -}}
+{{- dict "orgs" $orgs "groups" $groups "licenses" $licenses "datasets" $rows | jsonify -}}

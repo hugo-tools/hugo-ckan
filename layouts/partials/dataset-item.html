@@ -1,0 +1,9 @@
+{{- $p := .Params.ckan -}}
+<li class="dataset-item">
+  <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+  <div class="small muted">
+    {{ with $p.organization }}{{ .title }} · {{ end }}updated {{ .Lastmod.Format "2 Jan 2006" }}
+  </div>
+  {{ with $p.notes }}<p>{{ . | plainify | htmlUnescape | truncate 200 }}</p>{{ end }}
+  <div class="badges">{{ range .Params.formats }}<span class="badge" data-format="{{ . }}">{{ . }}</span>{{ end }}</div>
+</li>

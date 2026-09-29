@@ -1,0 +1,32 @@
+baseURL = "http://localhost:1313/"
+languageCode = "en"
+title = "Static CKAN"
+disableKinds = ["RSS"]
+enableGitInfo = false
+# Each ?tag=/?res_format= facet in CKAN becomes a pre-rendered taxonomy page.
+[taxonomies]
+  tag = "tags"
+  format = "formats"
+  license = "licenses"
+  organization = "organization"
+  group = "group"
+
+[pagination]
+  pagerSize = 20
+
+[outputFormats.ckanjson]
+  mediaType = "application/json"
+  baseName = "index"
+  isPlainText = true
+  notAlternative = false
+
+[outputs]
+  home = ["html", "ckanjson"]   # /index.json = client-side search index
+  page = ["html", "ckanjson"]   # /dataset/<name>/index.json = package_show payload
+  section = ["html"]
+  taxonomy = ["html"]
+  term = ["html"]
+
+[params]
+  # Filled from data/ckan/site.json at build time; these are fallbacks.
+  description = "A static, serverless mirror of a CKAN data portal, built with Hugo."

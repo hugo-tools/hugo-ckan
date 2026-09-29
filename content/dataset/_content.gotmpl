@@ -1,0 +1,45 @@
+{{/*
+  Content adapter: turns data/ckan/packages.json into pages.
+    /dataset/<name>/                  one page per package
+    /dataset/<name>/resource/<id>/    one page per resource
+  Taxonomy params (tags, formats, licenses, organization, group) make Hugo
+  pre-render every facet value as a paginated list page.
+*/}}
+{{ range site.Data.ckan.packages }}
+  {{ $pkg := . }}
+  {{ $formats := slice }}
+  {{ range .resources }}{{ with .format }}{{ $formats = $formats | append (upper .) }}{{ end }}{{ end }}
+  {{ $tags := slice }}
+  {{ range .tags }}{{ $tags = $tags | append .name }}{{ end }}
+  {{ $licenses := slice }}
+  {{ with .license_title }}{{ $licenses = slice . }}{{ end }}
+  {{ $orgs := slice }}
+  {{ with .organization }}{{ $orgs = slice .name }}{{ end }}
+  {{ $groups := slice }}
+  {{ range .groups }}{{ $groups = $groups | append .name }}{{ end }}
+  {{ $.AddPage (dict
+      "path" .name
+      "title" (or .title .name)
+      "content" (dict "mediaType" "text/markdown" "value" (or .notes ""))
+      "dates" (dict "date" (time.AsTime .metadata_created) "lastmod" (time.AsTime .metadata_modified))
+      "params" (dict
+          "ckan_type" "dataset"
+          "ckan" $pkg
+          "tags" $tags
+          "formats" ($formats | uniq)
+          "licenses" $licenses
+          "organization" $orgs
+          "group" $groups
+      )
+  ) }}
+  {{ range .resources }}
+    {{ $.AddPage (dict
+        "path" (printf "%s/resource/%s" $pkg.name .id)
+        "title" (or .name .url)
+        "content" (dict "mediaType" "text/markdown" "value" (or .description ""))
+        "dates" (dict "lastmod" (time.AsTime (or .last_modified .metadata_modified .created $pkg.metadata_modified)))
+        "params" (dict "ckan_type" "resource" "ckan" . "package_name" $pkg.name)
+        "build" (dict "list" "never")
+    ) }}
+  {{ end }}
+{{ end }}
