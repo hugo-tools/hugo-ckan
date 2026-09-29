@@ -1,0 +1,74 @@
+# Harvest a CKAN portal, build the static site and publish it to GitHub Pages.
+#
+# Setup (once per repository created from this template):
+#   1. Settings → Pages → Build and deployment → Source: "GitHub Actions"
+#   2. Settings → Secrets and variables → Actions → Variables:
+#        CKAN_URL   (required) e.g. https://demo.ckan.org
+#        CKAN_LANG  (optional) language for multilingual portals, default "en"
+#        CKAN_MAX   (optional) max datasets to harvest, default 0 = all
+# The workflow skips until CKAN_URL is set (or given as a manual-run input).
+name: Harvest and deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * *" # daily re-harvest keeps the snapshot fresh
+  workflow_dispatch:
+    inputs:
+      ckan_url:
+        description: "CKAN base URL (overrides the CKAN_URL variable for this run)"
+        required: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  HUGO_VERSION: "0.128.0"
+  CKAN_URL: ${{ inputs.ckan_url || vars.CKAN_URL }}
+
+jobs:
+  build:
+    if: ${{ inputs.ckan_url != '' || vars.CKAN_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Hugo
+        run: |
+          wget -q -O "${{ runner.temp }}/hugo.deb" \
+            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
+          sudo dpkg -i "${{ runner.temp }}/hugo.deb"
+          hugo version
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Harvest ${{ env.CKAN_URL }}
+        run: python3 harvest.py "$CKAN_URL" --lang "${{ vars.CKAN_LANG || 'en' }}" --max "${{ vars.CKAN_MAX || '0' }}"
+
+      - name: Build
+        env:
+          HUGO_ENVIRONMENT: production
+        run: hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

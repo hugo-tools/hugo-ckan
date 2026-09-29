@@ -4,7 +4,7 @@
 <section class="hero">
   <h1>{{ $s.site_title | default site.Title }}</h1>
   <p>{{ $s.site_description | default site.Params.description }}</p>
-  <form action="{{ "/dataset/" | relURL }}" role="search">
+  <form action="{{ "dataset/" | relURL }}" role="search">
     <input type="search" name="q" placeholder="Search {{ len $datasets | lang.FormatNumber 0 }} datasets…" aria-label="Search datasets" autofocus>
     <button class="btn">Search</button>
   </form>
@@ -41,7 +41,7 @@
     <ul class="dataset-list">
       {{ range first 8 $datasets.ByLastmod.Reverse }}{{ partial "dataset-item.html" . }}{{ end }}
     </ul>
-    <a class="btn ghost" href="{{ "/dataset/" | relURL }}">All datasets →</a>
+    <a class="btn ghost" href="{{ "dataset/" | relURL }}">All datasets →</a>
   </div>
 </div>
 {{ partial "api-publish.html" . }}

@@ -16,7 +16,7 @@
 {{ $pag := .Paginate .Pages.ByTitle }}
 <div class="results-head">
   <p class="muted" style="margin:0"><b>{{ len .Pages | lang.FormatNumber 0 }}</b> datasets</p>
-  <a class="btn ghost" href="{{ "/dataset/" | relURL }}?{{ $param }}={{ $value | urlquery }}">Search &amp; filter within these →</a>
+  <a class="btn ghost" href="{{ "dataset/" | relURL }}?{{ $param }}={{ $value | urlquery }}">Search &amp; filter within these →</a>
 </div>
 <ul class="dataset-list">{{ range $pag.Pages }}{{ partial "dataset-item.html" . }}{{ end }}</ul>
 {{ partial "pager.html" $pag }}

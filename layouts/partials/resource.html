@@ -1,9 +1,9 @@
 {{ $r := .Params.ckan }}
-{{ $ds := site.GetPage (printf "/dataset/%s" .Params.package_name) }}
+{{ $ds := site.GetPage (printf "dataset/%s" .Params.package_name) }}
 {{ $p := $ds.Params.ckan }}
 <div class="breadcrumb">
-  <span><a href="{{ "/dataset/" | relURL }}">Datasets</a></span>
-  {{ with $p.organization }}<span><a href="{{ printf "/organization/%s/" .name | relURL }}">{{ .title }}</a></span>{{ end }}
+  <span><a href="{{ "dataset/" | relURL }}">Datasets</a></span>
+  {{ with $p.organization }}<span><a href="{{ printf "organization/%s/" .name | relURL }}">{{ .title }}</a></span>{{ end }}
   <span><a href="{{ $ds.RelPermalink }}">{{ $ds.Title | truncate 50 }}</a></span>
   <span>{{ .Title | truncate 50 }}</span>
 </div>
@@ -11,7 +11,7 @@
   <aside>
     <div class="card facet"><h4>Resources</h4><ul>
       {{ range $p.resources }}
-      <li><a href="{{ printf "/dataset/%s/resource/%s/" $p.name .id | relURL }}"{{ if eq .id $r.id }} class="active"{{ end }}><span>{{ or .name .url | truncate 40 }}</span><span class="n">{{ upper .format }}</span></a></li>
+      <li><a href="{{ printf "dataset/%s/resource/%s/" $p.name .id | relURL }}"{{ if eq .id $r.id }} class="active"{{ end }}><span>{{ or .name .url | truncate 40 }}</span><span class="n">{{ upper .format }}</span></a></li>
       {{ end }}
     </ul></div>
   </aside>

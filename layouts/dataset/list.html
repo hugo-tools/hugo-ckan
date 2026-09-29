@@ -31,6 +31,6 @@
 </div>
 {{ end }}
 {{ define "scripts" }}
-{{ $js := resources.Get "js/search.js" | js.Build (dict "minify" true "params" (dict "index" ("/index.json" | relURL) "base" ("/" | relURL))) | fingerprint }}
+{{ $js := resources.Get "js/search.js" | js.Build (dict "minify" true "params" (dict "index" ("index.json" | relURL) "base" (site.Home.RelPermalink))) | fingerprint }}
 <script src="{{ $js.RelPermalink }}" defer></script>
 {{ end }}

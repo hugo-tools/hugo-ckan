@@ -3,8 +3,8 @@
 {{ $p := .Params.ckan }}
 {{ $src := site.Data.ckan.site.source_url }}
 <div class="breadcrumb">
-  <span><a href="{{ "/dataset/" | relURL }}">Datasets</a></span>
-  {{ with $p.organization }}<span><a href="{{ printf "/organization/%s/" .name | relURL }}">{{ .title }}</a></span>{{ end }}
+  <span><a href="{{ "dataset/" | relURL }}">Datasets</a></span>
+  {{ with $p.organization }}<span><a href="{{ printf "organization/%s/" .name | relURL }}">{{ .title }}</a></span>{{ end }}
   <span>{{ .Title | truncate 60 }}</span>
 </div>
 <div class="layout">
@@ -12,13 +12,13 @@
     {{ with $p.organization }}
     <div class="card">
       {{ with partial "image.html" . }}<img src="{{ . }}" alt="" style="max-height:80px" loading="lazy">{{ end }}
-      <h3><a href="{{ printf "/organization/%s/" .name | relURL }}">{{ .title }}</a></h3>
+      <h3><a href="{{ printf "organization/%s/" .name | relURL }}">{{ .title }}</a></h3>
       {{ with .description }}<p class="small muted">{{ . | plainify | truncate 180 }}</p>{{ end }}
     </div>
     {{ end }}
     {{ with $p.groups }}
     <div class="card facet"><h4>Groups</h4><ul>
-      {{ range . }}<li><a href="{{ printf "/group/%s/" .name | relURL }}">{{ or .title .display_name .name }}</a></li>{{ end }}
+      {{ range . }}<li><a href="{{ printf "group/%s/" .name | relURL }}">{{ or .title .display_name .name }}</a></li>{{ end }}
     </ul></div>
     {{ end }}
     <div class="card facet">
@@ -45,7 +45,7 @@
         <li>
           <span class="fmt"><span class="badge" data-format="{{ upper .format }}">{{ upper .format | default "—" }}</span></span>
           <div class="info">
-            <a href="{{ printf "/dataset/%s/resource/%s/" $p.name .id | relURL }}">{{ or .name .url }}</a>
+            <a href="{{ printf "dataset/%s/resource/%s/" $p.name .id | relURL }}">{{ or .name .url }}</a>
             {{ with .description }}<p>{{ . | plainify | truncate 140 }}</p>{{ end }}
           </div>
           <a class="btn ghost" href="{{ .url }}" rel="nofollow">Download</a>

@@ -13,6 +13,26 @@ make build                                            # writes public/
 ```
 
 Requirements: Hugo ≥ 0.126 (extended), which adds content adapters, and Python 3.
+The harvested snapshot (`data/ckan/`) is not committed. Run `make harvest`
+before building locally.
+
+## Publish your own portal mirror (template)
+
+1. Click **Use this template → Create a new repository**.
+2. In the new repository, go to **Settings → Pages** and set **Source** to
+   **GitHub Actions**.
+3. Go to **Settings → Secrets and variables → Actions → Variables** and add:
+   - `CKAN_URL` (required), e.g. `https://demo.ckan.org`
+   - `CKAN_LANG` (optional, default `en`): the language to use on multilingual portals
+   - `CKAN_MAX` (optional, default `0` = all): a cap on datasets, handy for trial runs
+4. Run **Actions → Harvest and deploy → Run workflow**, or push to `main`.
+
+The workflow (`.github/workflows/deploy.yml`) harvests the portal, builds the
+site with the correct Pages base URL, and deploys it. After that it
+re-harvests daily; change the `cron` line to adjust how often. The workflow
+does nothing until `CKAN_URL` is set, so a fresh copy never shows failing
+runs. GitHub pauses scheduled workflows in repositories with no activity for
+60 days; re-enable them from the Actions tab.
 
 ## How CKAN features map to static files
 

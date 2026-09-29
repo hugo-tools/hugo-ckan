@@ -14,15 +14,15 @@
 <body>
   <header class="site-header">
     <div class="wrap header-row">
-      <a class="brand" href="{{ "/" | relURL }}">{{ $s.site_title | default site.Title }}</a>
+      <a class="brand" href="{{ site.Home.RelPermalink }}">{{ $s.site_title | default site.Title }}</a>
       <nav class="main-nav">
         {{ $cur := .Section }}
         {{ range slice (slice "dataset" "Datasets") (slice "organization" "Organizations") (slice "group" "Groups") (slice "about" "About") }}
-          <a href="{{ printf "/%s/" (index . 0) | relURL }}"{{ if eq $cur (index . 0) }} aria-current="page"{{ end }}>{{ index . 1 }}</a>
+          <a href="{{ printf "%s/" (index . 0) | relURL }}"{{ if eq $cur (index . 0) }} aria-current="page"{{ end }}>{{ index . 1 }}</a>
         {{ end }}
       </nav>
-      {{ if not (or .IsHome (eq .RelPermalink ("/dataset/" | relURL))) }}
-      <form class="header-search" action="{{ "/dataset/" | relURL }}" role="search">
+      {{ if not (or .IsHome (eq .RelPermalink ("dataset/" | relURL))) }}
+      <form class="header-search" action="{{ "dataset/" | relURL }}" role="search">
         <input type="search" name="q" placeholder="Search datasets…" aria-label="Search datasets">
       </form>
       {{ end }}
@@ -37,8 +37,8 @@
       {{ with $s.ckan_version }}(CKAN {{ . }}){{ end }}
       harvested {{ with $s.harvested_at }}{{ (time.AsTime .).Format "2 Jan 2006 15:04 MST" }}{{ end }}
       · Built with <a href="https://gohugo.io">Hugo</a>
-      · <a href="{{ "/api/3/action/package_list" | relURL }}">API</a>
-      · <a href="{{ "/catalog.jsonld" | relURL }}">DCAT</a>
+      · <a href="{{ "api/3/action/package_list" | relURL }}">API</a>
+      · <a href="{{ "catalog.jsonld" | relURL }}">DCAT</a>
     </div>
   </footer>
   {{ block "scripts" . }}{{ end }}
